@@ -1,12 +1,14 @@
 import express from "express";
 import Task from "../models/Task.model.js";
 const router = express.Router();
+import { io } from "../server.js";
 
 // Create a new task
 router.post("/", async (req, res) => {
   try {
     const task = new Task(req.body);
     await task.save();
+    io.emit("task_created", task);
     res.status(201).json(task);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -29,6 +31,7 @@ router.put("/:id", async (req, res) => {
     const task = await Task.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
     });
+    io.emit("task_updated", task);
     res.json(task);
   } catch (error) {
     res.status(400).json({ error: error.message });
